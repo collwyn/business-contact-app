@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { auth } from '../services/api';  // Add this import
+import { auth } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -8,28 +8,32 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
+    const initializeAuth = async () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
           const response = await auth.getCurrentUser();
-          setUser({ token, role: response.data.role });
+          setUser({ token, ...response.data });
         } catch (error) {
+          console.error('Auth initialization error:', error);
           localStorage.removeItem('token');
         }
       }
       setLoading(false);
     };
-    checkUser();
+
+    initializeAuth();
   }, []);
 
   const login = async (token) => {
-    localStorage.setItem('token', token);
     try {
+      localStorage.setItem('token', token);
       const response = await auth.getCurrentUser();
-      setUser({ token, role: response.data.role });
+      setUser({ token, ...response.data });
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('Login error:', error);
+      localStorage.removeItem('token');
+      throw error;
     }
   };
 

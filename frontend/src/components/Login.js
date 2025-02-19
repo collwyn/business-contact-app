@@ -7,7 +7,8 @@ import {
   Button,
   Typography,
   Box,
-  Alert
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import { auth } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -36,9 +37,10 @@ const Login = () => {
 
     try {
       const response = await auth.login(formData);
-      login(response.data.token);
-      navigate('/businesses');
+      await login(response.data.token); // Wait for login to complete
+      navigate('/businesses'); // Navigate after login is complete
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.error || 'Failed to login');
     } finally {
       setLoading(false);
@@ -68,6 +70,7 @@ const Login = () => {
               onChange={handleChange}
               margin="normal"
               required
+              disabled={loading}
             />
             <TextField
               fullWidth
@@ -78,6 +81,7 @@ const Login = () => {
               onChange={handleChange}
               margin="normal"
               required
+              disabled={loading}
             />
             <Button
               type="submit"
@@ -86,13 +90,14 @@ const Login = () => {
               sx={{ mt: 3 }}
               disabled={loading}
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? <CircularProgress size={24} /> : 'Login'}
             </Button>
             <Button
               fullWidth
               variant="text"
               sx={{ mt: 1 }}
               onClick={() => navigate('/register')}
+              disabled={loading}
             >
               Don't have an account? Register
             </Button>
